@@ -56,19 +56,7 @@ public class VasItemNews {
         } catch (Exception e) {
             Logger.error(e);
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (ps != null) {
-                    ps.close();
-                }
-                if (con != null) {
-                    con.close();
-                }
-            } catch (Exception e) {
-                Logger.error(e);
-            }
+            close(con, ps, rs);
         }
     }
 
@@ -80,7 +68,7 @@ public class VasItemNews {
         try {
             if (!DBConnect.getConnection().isClosed()) {
                 con = DBConnect.getConnection();
-                ps = con.prepareStatement("call vnmedia.get_article(?,?,?);");
+                ps = con.prepareStatement("call phap_luat_doi_song.get_article(?,?,?);");
                 ps.setInt(1, type);
                 ps.setInt(2, offset);
                 ps.setInt(3, limit);
@@ -108,19 +96,7 @@ public class VasItemNews {
         } catch (Exception e) {
             Logger.error(e);
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (ps != null) {
-                    ps.close();
-                }
-                if (con != null) {
-                    con.close();
-                }
-            } catch (Exception e) {
-                Logger.error(e);
-            }
+            close(con, ps, rs);
         }
 
         return listNews;
@@ -166,19 +142,23 @@ public class VasItemNews {
         } catch (Exception e) {
             Logger.error(e);
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (ps != null) {
-                    ps.close();
-                }
-                if (con != null) {
-                    con.close();
-                }
-            } catch (Exception e) {
-                Logger.error(e);
+            close(con, ps, rs);
+        }
+    }
+
+    private static void close(Connection con, PreparedStatement ps, ResultSet rs) {
+        try {
+            if (rs != null) {
+                rs.close();
             }
+            if (ps != null) {
+                ps.close();
+            }
+            if (con != null) {
+                con.close();
+            }
+        } catch (Exception e) {
+            Logger.error(e);
         }
     }
 
@@ -189,10 +169,10 @@ public class VasItemNews {
         try {
             if (!DBConnect.getConnection().isClosed()) {
                 con = DBConnect.getConnection();
-                ps = con.prepareStatement("select * from vnmedia.article where name = ?");
+                ps = con.prepareStatement("select * from phap_luat_doi_song.article where name = ?");
                 ps.setString(1, object.title);
-                rs = ps.executeQuery();
 
+                rs = ps.executeQuery();
                 while (rs.next()) {
                     Logger.log("Exist article with name: " + rs.getString("name"));
                     return true;
@@ -202,20 +182,7 @@ public class VasItemNews {
         } catch (Exception e) {
             Logger.error(e);
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (ps != null) {
-                    ps.close();
-                }
-                if (con != null) {
-                    con.close();
-//                    DBConnect.Close();
-                }
-            } catch (Exception e) {
-                Logger.error(e);
-            }
+            close(con, ps, rs);
         }
         return false;
     }

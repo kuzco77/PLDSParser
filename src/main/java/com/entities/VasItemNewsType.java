@@ -15,82 +15,79 @@ public class VasItemNewsType {
 
     public static List<VasItemNewsType> getArticleType() {
         List<VasItemNewsType> list = new ArrayList<VasItemNewsType>();
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             if (!DBConnect.getConnection().isClosed()) {
-                Connection con = null;
-                PreparedStatement ps = null;
-                ResultSet rs = null;
-                try {
-                    con = DBConnect.getConnection();
-                    ps = con.prepareStatement("select * from article_type where url is not null AND status = 1 AND parent = 0");
-                    rs = ps.executeQuery();
-                    while (rs.next()) {
-                        VasItemNewsType v = new VasItemNewsType();
-                        v.id = rs.getInt("id");
-                        v.name = rs.getString("name");
-                        v.parent = rs.getInt("parent");
-                        v.status = rs.getInt("status");
-                        v.hasChild = rs.getInt("has_child");
-                        v.url = rs.getString("url");
-                        list.add(v);
-                    }
-                } catch (Exception e) {
-                    Logger.error(e);
-                } finally {
-                    if (rs != null) {
-                        rs.close();
-                    }
-                    if (ps != null) {
-                        ps.close();
-                    }
-
-                    if (con != null) {
-                        con.close();
-                    }
+                con = DBConnect.getConnection();
+                ps = con.prepareStatement("select * from article_type where url is not null AND status = 1 AND parent = 0");
+                rs = ps.executeQuery();
+                while (rs.next()) {
+                    VasItemNewsType v = new VasItemNewsType();
+                    v.id = rs.getInt("id");
+                    v.name = rs.getString("name");
+                    v.parent = rs.getInt("parent");
+                    v.status = rs.getInt("status");
+                    v.hasChild = rs.getInt("has_child");
+                    v.url = rs.getString("url");
+                    list.add(v);
                 }
             }
         } catch (Exception e) {
             Logger.error(e);
+        } finally {
+            closeCon(con, ps, rs);
         }
-//        DBConnect.Close();
         return list;
     }
 
     public static VasItemNewsType getArticleTypeById(int id) {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             if (!DBConnect.getConnection().isClosed()) {
-                Connection con = DBConnect.getConnection();
-                PreparedStatement ps = null;
-                ResultSet rs = null;
-                try {
+                System.out.println("start getArticleTypeById getConnection");
+                con = DBConnect.getConnection();
+                System.out.println("end getArticleTypeById getConnection");
+                ps = con.prepareStatement("select * from article_type where url is not null AND status = 1 AND id = ? limit 1");
+                ps.setInt(1, id);
 
-                    ps = DBConnect.getConnection().prepareStatement("select * from article_type where url is not null AND status = 1 AND id = ? limit 1");
-                    ps.setInt(1, id);
-                    rs = ps.executeQuery();
-                    while (rs.next()) {
-                        VasItemNewsType v = new VasItemNewsType();
-                        v.id = rs.getInt("id");
-                        v.name = rs.getString("name");
-                        v.parent = rs.getInt("parent");
-                        v.status = rs.getInt("status");
-                        v.hasChild = rs.getInt("has_child");
-                        v.url = rs.getString("url");
-                        return v;
-                    }
-                } catch (Exception e) {
-                    Logger.error(e);
-                } finally {
-                    if (rs != null) {
-                        rs.close();
-                    }
-                    if (ps != null) {
-                        ps.close();
-                    }
+                rs = ps.executeQuery();
+                while (rs.next()) {
+                    VasItemNewsType v = new VasItemNewsType();
+                    v.id = rs.getInt("id");
+                    v.name = rs.getString("name");
+                    v.parent = rs.getInt("parent");
+                    v.status = rs.getInt("status");
+                    v.hasChild = rs.getInt("has_child");
+                    v.url = rs.getString("url");
+                    return v;
                 }
+
+            }
+        } catch (Exception e) {
+            Logger.error(e);
+        } finally {
+            closeCon(con, ps, rs);
+        }
+        return null;
+    }
+
+    private static void closeCon(Connection con, PreparedStatement ps, ResultSet rs) {
+        try {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (con != null) {
+                con.close();
             }
         } catch (Exception e) {
             Logger.error(e);
         }
-        return null;
     }
 }

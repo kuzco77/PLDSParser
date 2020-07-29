@@ -30,7 +30,7 @@ public class DBConnect {
             ds.setUsername(Config.DB_USER);
             ds.setPassword(Config.DB_PWD);
             ds.setInitialSize(Config.DB_MIN_CONNECTION);
-//            ds.setMaxOpenPreparedStatements(100);
+            ds.setMaxOpenPreparedStatements(100);
             ds.setValidationQuery("Select 1");
             ds.setMaxTotal(Config.DB_MAX_CONNECTION);
             datasource = ds;

@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,14 +24,23 @@ public class PLDSFetch {
 
     private static final CloseableHttpClient httpClient = HttpClients.createDefault();
 
-    public static List<VasItemNews> getListNew2(int typeInt, int page, PLDSCompletion completion) {
+    public static List<VasItemNews> getListNew(int typeInt, int page, PLDSCompletion completion) {
         List<VasItemNews> listNew = new ArrayList<>();
+        System.out.println("Start getListNew getArticleTypeById");
         VasItemNewsType newType = VasItemNewsType.getArticleTypeById(typeInt);
-        try {
-            String apiLink = Config.BASE_PLDS_URL + newType.url + "/page/" + String.valueOf(page);
-            return getData(typeInt, apiLink, completion);
-        } catch (Exception e) {
-            Logger.error(e);
+        System.out.println("End getListNew getArticleTypeById");
+        int count = 0;
+        int maxTries = 3;
+        while (true) {
+            try {
+                String apiLink = Config.BASE_PLDS_URL + newType.url + "/page/" + String.valueOf(page);
+                return getData(typeInt, apiLink, completion);
+            } catch (SocketTimeoutException e1) {
+                Logger.error(e1);
+                if (++count == maxTries) break;
+            } catch (Exception e) {
+                Logger.error(e);
+            }
         }
         return listNew;
     }
@@ -42,7 +52,7 @@ public class PLDSFetch {
             VasItemNews newArticle = listArticle.get(i);
             doc = Jsoup.parseBodyFragment(newArticle.detail);
             Elements imgElements = doc.select("img").attr("width", "500");
-            for (Element imgElement: imgElements) {
+            for (Element imgElement : imgElements) {
                 imgElement.attr("width", "100%");
             }
             newArticle.detail = doc.toString();
@@ -52,7 +62,12 @@ public class PLDSFetch {
     }
 
     private static List<VasItemNews> getData(int typeInt, String apiURL, PLDSCompletion completion) throws Exception {
-        Document doc = Jsoup.connect(apiURL).get();
+        System.out.println("Get content of: " + apiURL);
+        Document doc = Jsoup.connect(apiURL)
+                .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
+                .referrer("http://www.google.com")
+                .timeout(60000)
+                .get();
 
         List<VasItemNews> listNews = new ArrayList<>();
 
@@ -60,7 +75,7 @@ public class PLDSFetch {
         if (a.size() > 0) {
             Elements listTitle = a.get(0).getElementsByClass("title");
             Elements listInfoPkg = a.get(0).getElementsByClass("info pkg");
-            for (int i = 0; i < listTitle.size() || i < listInfoPkg.size(); i++) {
+            for (int i = 0; i < listTitle.size() && i < listInfoPkg.size(); i++) {
                 VasItemNews news = new VasItemNews();
                 news.type = typeInt;
 
@@ -68,9 +83,8 @@ public class PLDSFetch {
                 news.title = title;
 
                 String logo = listInfoPkg.get(i).select("div.info.pkg > a.img > img").attr("src");
-                String logoDownloadLink = logo.replace("thumb_x190x125", "");
-                news.logo = "/" + logoDownloadLink.replace(Config.BASE_IMAGE_PLDS_URL, "");
-
+                String logoDownloadLink = logo.replace("/thumb_x190x125", "").replace("/thumb_x480x340", "");
+                news.logo = logoDownloadLink.replace(Config.BASE_IMAGE_PLDS_URL, "");
 
                 String shortDesc = listInfoPkg.get(i).select("div.info.pkg > p.desc").text();
                 news.shortDesc = shortDesc;
@@ -82,7 +96,12 @@ public class PLDSFetch {
 
                 String href = listTitle.get(i).select("h4.title > a").attr("href");
                 news.url = href;
-                doc = Jsoup.connect(href).get();
+                System.out.println("Get content of: " + href);
+                doc = Jsoup.connect(href)
+                        .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
+                        .referrer("http://www.google.com")
+                        .timeout(60000)
+                        .get();
 
                 Elements detailEs = doc.select("article.detail");
                 if (detailEs.size() == 0) continue;

@@ -11,10 +11,10 @@ import java.util.List;
 
 public class Config {
 
-    public static boolean isDevelopOnServer = true;
+    public static boolean isDevelopOnServer = false;
 
-    public static String BASE_PLDS_URL = "https://www.doisongphapluat.com/";
-    public static String BASE_IMAGE_PLDS_URL = "https://media.doisongphapluat.com/";
+    public static String BASE_PLDS_URL = "https://www.doisongphapluat.com";
+    public static String BASE_IMAGE_PLDS_URL = "https://media.doisongphapluat.com";
     /*VNMedia specific format*/
     public static String PLDS_DATE_FORMAT = "HH:mmaa ,dd/MM/yyyy";
     public static String VNMEDIA_API_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S HH:mm";
